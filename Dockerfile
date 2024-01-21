@@ -2,9 +2,6 @@ ARG ARCH
 ARG FEDORA_VERSION
 FROM docker.io/${ARCH}/fedora:${FEDORA_VERSION}
 
-ARG ARCH
-ENV ARCH ${ARCH}
-
 # Install build requirements
 RUN dnf update -y && \
     dnf install -y \
