@@ -10,7 +10,7 @@ build:
 	@sudo modprobe crypto_user
 	@mkdir -p output kernel
 	@podman build --build-arg=ARCH=$(ARCH) --build-arg=FEDORA_VERSION=$(FEDORA_VERSION) -t kernel-rt:latest .
-	@podman run -it --rm -e FEDORA_VERSION=$(FEDORA_VERSION) -v $$PWD/kernel:/kernel:Z -v $$PWD/output:/output:Z kernel-rt:latest
+	@podman run -it --rm -e FEDORA_VERSION=$(FEDORA_VERSION) -v $$PWD/configs:/configs:Z -v $$PWD/kernel:/kernel:Z -v $$PWD/output:/output:Z kernel-rt:latest
 
 clean:
 	@rm -rf output kernel

@@ -1,28 +1,28 @@
 #!/bin/bash
 
+LINUX_VERSION=linux-stable-rt-6.6.18-rt23
+
 set -e
 set -u
 
-git clone https://src.fedoraproject.org/rpms/kernel.git /kernel
-cd /kernel &&
-git checkout 08fd1612fa2ffb9f9e988cf33afbc2edca63a9ba
-sudo dnf builddep -y kernel.spec
 
-# set build id
-sed -i "s/# define buildid .local/%define buildid .rt/g" kernel.spec
+if [[ ! -d /kernel/$LINUX_VERSION ]]; then 
+    wget -c https://git.kernel.org/pub/scm/linux/kernel/git/rt/linux-stable-rt.git/snapshot/$LINUX_VERSION.tar.gz -O - | tar -xz -C /kernel
+fi
 
-# download patch
-wget -qO- https://cdn.kernel.org/pub/linux/kernel/projects/rt/6.6/patch-6.6.12-rt20.patch.xz | xz -d > patch-6.6.12-rt20.patch
-#echo "Patch2: patch-6.6.12-rt20.patch" >> kernel.spec
+cd /tmp/
+git clone https://src.fedoraproject.org/rpms/kernel.git
+cd kernel
+git checkout f39
+echo Generating fedora config file...
+./generate_all_configs.sh
+echo Copying config file...
+cp kernel-x86_64-fedora.config /kernel/$LINUX_VERSION/.config
 
-# Fix for error
-git config --global user.email "you@example.com"
-git config --global user.name "Your Name"
-git checkout -b 6.6.12-rt
-git add kernel.spec patch-6.6.12-rt20.patch
-git commit -m "Tmp commit to fix error"
-git branch -u origin/f39
+echo Merging config file...
+cd /kernel/$LINUX_VERSION
+./scripts/kconfig/merge_config.sh .config /configs/*
 
-fedpkg local
-
-
+make oldconfig
+make bzImage
+make modules
